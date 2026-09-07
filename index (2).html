@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Auction vs IA</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  color: white;
+  background:
+    radial-gradient(circle at top, #176b38, #06130a 70%);
+}
+
+header {
+  background: #07100a;
+  border-bottom: 2px solid #37d66b;
+  padding: 18px 5%;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  color: #39e36d;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+header span {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.container {
+  width: 94%;
+  max-width: 1250px;
+  margin: 25px auto;
+}
+
+.panel {
+  background: rgba(0,0,0,.5);
+  border: 1px solid #287a40;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 20px;
+}
+
+h1, h2 {
+  margin-bottom: 15px;
+}
+
+.center {
+  text-align: center;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat {
+  background: #101a13;
+  padding: 18px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.stat strong {
+  display: block;
+  color: #ffd700;
+  font-size: 24px;
+  margin-top: 5px;
+}
+
+.auction-player {
+  text-align: center;
+}
+
+.photo {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid #ffd700;
+}
+
+.player-name {
+  font-size: 32px;
+  margin-top: 15px;
+}
+
+.position {
+  color: #ffd700;
+  margin-top: 5px;
+}
+
+.price {
+  font-size: 28px;
+  color: #42e879;
+  margin: 15px;
+}
+
+button {
+  border: 0;
+  padding: 13px 22px;
+  border-radius: 9px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  margin: 5px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+.green {
+  background: #168943;
+}
+
+.red {
+  background: #9c2424;
+}
+
+.blue {
+  background: #2563eb;
+}
+
+.gold {
+  background: #d4a900;
+  color: black;
+}
+
+button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.message {
+  margin-top: 15px;
+  color: #ffd700;
+  min-height: 25px;
+}
+
+/* CAMPO */
+
+.field {
+  position: relative;
+  width: 100%;
+  height: 600px;
+
+  border: 4px solid white;
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 49.8%,
+      rgba(255,255,255,.5) 50%,
+      transparent 50.2%
+    ),
+    #16813f;
+
+  overflow: hidden;
+}
+
+.field:before {
+  content: "";
+  position: absolute;
+
+  width: 150px;
+  height: 150px;
+
+  border: 2px solid white;
+  border-radius: 50%;
+
+  left: calc(50% - 75px);
+  top: calc(50% - 75px);
+}
+
+.field:after {
+  content: "";
+  position: absolute;
+
+  width: 100%;
+  height: 2px;
+
+  background: rgba(255,255,255,.7);
+  top: 50%;
+}
+
+.slot {
+  position: absolute;
+  width: 115px;
+  text-align: center;
+  z-index: 2;
+}
+
+.shirt {
+  width: 48px;
+  height: 48px;
+
+  margin: auto;
+
+  background: #ffd700;
+  color: #111;
+
+  border-radius: 50%;
+  border: 2px solid white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+}
+
+.slot-name {
+  font-size: 11px;
+  margin-top: 5px;
+  text-shadow: 1px 2px 3px #000;
+}
+
+/* POSICIONES 4-3-3 */
+
+.gk {
+  bottom: 20px;
+  left: calc(50% - 57px);
+}
+
+.rb {
+  bottom: 125px;
+  right: 8%;
+}
+
+.cb1 {
+  bottom: 140px;
+  right: 32%;
+}
+
+.cb2 {
+  bottom: 140px;
+  left: 32%;
+}
+
+.lb {
+  bottom: 125px;
+  left: 8%;
+}
+
+.cm1 {
+  top: 48%;
+  left: 25%;
+}
+
+.cm2 {
+  top: 48%;
+  right: 25%;
+}
+
+.cam {
+  top: 36%;
+  left: calc(50% - 57px);
+}
+
+.rw {
+  top: 20%;
+  right: 14%;
+}
+
+.lw {
+  top: 20%;
+  left: 14%;
+}
+
+.st {
+  top: 10%;
+  left: calc(50% - 57px);
+}
+
+/* PARTIDO */
+
+.match {
+  display: none;
+}
+
+.score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 35px;
+
+  font-size: 48px;
+  font-weight: bold;
+
+  margin: 20px;
+}
+
+.team-name {
+  font-size: 18px;
+  color: #ddd;
+}
+
+.events {
+  max-height: 250px;
+  overflow-y: auto;
+
+  background: #0b100d;
+  border-radius: 10px;
+  padding: 15px;
+
+  text-align: left;
+}
+
+.event {
+  padding: 9px;
+  border-bottom: 1px solid #242424;
+}
+
+.final {
+  text-align: center;
+  padding: 25px;
+  font-size: 28px;
+  color: #ffd700;
+}
+
+@media(max-width: 750px) {
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .field {
+    height: 500px;
+  }
+
+  .slot {
+    transform: scale(.75);
+  }
+
+  .player-name {
+    font-size: 24px;
+  }
+
+  .score {
+    font-size: 35px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">⚽ FOOTBALL AUCTION</div>
+  <span>👤 TÚ VS 🤖 IA</span>
+</header>
+
+<div class="container">
+
+  <!-- INFORMACIÓN -->
+
+  <div class="panel">
+
+    <div class="stats">
+
+      <div class="stat">
+        Tu presupuesto
+        <strong id="money">€100M</strong>
+      </div>
+
+      <div class="stat">
+        Jugadores
+        <strong id="count">0 / 11</strong>
+      </div>
+
+      <div class="stat">
+        Presupuesto IA
+        <strong id="aiMoney">€100M</strong>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- SUBASTA -->
+
+  <div class="panel" id="auction">
+
+    <div class="auction-player">
+
+      <h1>SUBASTA</h1>
+
+      <img id="photo" class="photo">
+
+      <div id="playerName" class="player-name">
+        Pulsa comenzar
+      </div>
+
+      <div id="position" class="position">
+        —
+      </div>
+
+      <div id="price" class="price">
+        €0M
+      </div>
+
+      <button
+        id="start"
+        class="blue"
+        onclick="startGame()">
+        Comenzar
+      </button>
+
+      <button
+        id="bid"
+        class="green"
+        onclick="bid()"
+        disabled>
+        💰 Pujar
+      </button>
+
+      <button
+        id="pass"
+        class="red"
+        onclick="pass()"
+        disabled>
+        ❌ Pasar
+      </button>
+
+      <div id="message" class="message">
+        Forma tu XI y después juega contra la IA.
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- TU EQUIPO -->
+
+  <div class="panel">
+
+    <h2>👤 TU XI INICIAL</h2>
+
+    <div class="field">
+
+      <div class="slot gk">
+        <div class="shirt">GK</div>
+        <div class="slot-name" id="GK">POR</div>
+      </div>
+
+      <div class="slot rb">
+        <div class="shirt">RB</div>
+        <div class="slot-name" id="RB">LD</div>
+      </div>
+
+      <div class="slot cb1">
+        <div class="shirt">CB</div>
+        <div class="slot-name" id="CB1">DFC</div>
+      </div>
+
+      <div class="slot cb2">
+        <div class="shirt">CB</div>
+        <div class="slot-name" id="CB2">DFC</div>
+      </div>
+
+      <div class="slot lb">
+        <div class="shirt">LB</div>
+        <div class="slot-name" id="LB">LI</div>
+      </div>
+
+      <div class="slot cm1">
+        <div class="shirt">CM</div>
+        <div class="slot-name" id="CM1">MC</div>
+      </div>
+
+      <div class="slot cm2">
+        <div class="shirt">CM</div>
+        <div class="slot-name" id="CM2">MC</div>
+      </div>
+
+      <div class="slot cam">
+        <div class="shirt">CAM</div>
+        <div class="slot-name" id="CAM">MCO</div>
+      </div>
+
+      <div class="slot lw">
+        <div class="shirt">LW</div>
+        <div class="slot-name" id="LW">EI</div>
+      </div>
+
+      <div class="slot rw">
+        <div class="shirt">RW</div>
+        <div class="slot-name" id="RW">ED</div>
+      </div>
+
+      <div class="slot st">
+        <div class="shirt">ST</div>
+        <div class="slot-name" id="ST">DC</div>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- PARTIDO -->
+
+  <div class="panel match" id="match">
+
+    <div class="center">
+
+      <h1>🏟️ PARTIDO</h1>
+
+      <div class="score">
+
+        <div>
+          <div class="team-name">TU EQUIPO</div>
+          <span id="myScore">0</span>
+        </div>
+
+        <div>:</div>
+
+        <div>
+          <div class="team-name">IA</div>
+          <span id="aiScore">0</span>
+        </div>
+
+      </div>
+
+      <button
+        class="gold"
+        id="playButton"
+        onclick="playMatch()">
+        ▶️ JUGAR PARTIDO
+      </button>
+
+      <div class="events" id="events">
+        Pulsa "Jugar partido" para comenzar.
+      </div>
+
+      <div class="final" id="final"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   JUGADORES
+========================= */
+
+const players = [
+
+  {
+    name: "Lev Yashin",
+    pos: "POR",
+    value: 12,
+    rating: 95
+  },
+
+  {
+    name: "Cafu",
+    pos: "LD",
+    value: 12,
+    rating: 94
+  },
+
+  {
+    name: "Franz Beckenbauer",
+    pos: "DFC",
+    value: 15,
+    rating: 97
+  },
+
+  {
+    name: "Sergio Ramos",
+    pos: "DFC",
+    value: 11,
+    rating: 94
+  },
+
+  {
+    name: "Roberto Carlos",
+    pos: "LI",
+    value: 13,
+    rating: 95
+  },
+
+  {
+    name: "Xavi",
+    pos: "MC",
+    value: 14,
+    rating: 95
+  },
+
+  {
+    name: "Luka Modric",
+    pos: "MC",
+    value: 15,
+    rating: 96
+  },
+
+  {
+    name: "Zinedine Zidane",
+    pos: "MCO",
+    value: 18,
+    rating: 98
+  },
+
+  {
+    name: "Ronaldinho",
+    pos: "EI",
+    value: 17,
+    rating: 96
+  },
+
+  {
+    name: "Lionel Messi",
+    pos: "ED",
+    value: 23,
+    rating: 99
+  },
+
+  {
+    name: "Ronaldo Nazário",
+    pos: "DC",
+    value: 21,
+    rating: 97
+  },
+
+  {
+    name: "Cristiano Ronaldo",
+    pos: "DC",
+    value: 22,
+    rating: 98
+  },
+
+  {
+    name: "Pelé",
+    pos: "DC",
+    value: 24,
+    rating: 99
+  },
+
+  {
+    name: "Diego Maradona",
+    pos: "MCO",
+    value: 22,
+    rating: 98
+  }
+
+];
+
+
+/* =========================
+   VARIABLES
+========================= */
+
+let money = 100;
+let aiMoney = 100;
+
+let index = 0;
+
+let currentPlayer = null;
+let currentPrice = 0;
+
+let myTeam = [];
+let aiTeam = [];
+
+let auctionActive = false;
+
+
+/* =========================
+   COMENZAR
+========================= */
+
+function startGame() {
+
+  auctionActive = true;
+
+  document.getElementById("start").disabled = true;
+  document.getElementById("bid").disabled = false;
+  document.getElementById("pass").disabled = false;
+
+  showPlayer();
+}
+
+
+/* =========================
+   MOSTRAR JUGADOR
+========================= */
+
+function showPlayer() {
+
+  if (myTeam.length >= 11) {
+    finishAuction();
+    return;
+  }
+
+  /*
+    Si llegamos al final,
+    mezclamos la lista para seguir
+    ofreciendo jugadores.
+  */
+
+  if (index >= players.length) {
+
+    index = 0;
+
+    players.sort(() => Math.random() - .5);
+  }
+
+  currentPlayer = players[index];
+
+  currentPrice = currentPlayer.value;
+
+  document.getElementById("photo").src =
+    "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=500&q=80";
+
+  document.getElementById("playerName").textContent =
+    currentPlayer.name;
+
+  document.getElementById("position").textContent =
+    currentPlayer.pos;
+
+  document.getElementById("price").textContent =
+    "€" + currentPrice + "M";
+}
+
+
+/* =========================
+   PUJAR
+========================= */
+
+function bid() {
+
+  if (money < currentPrice + 1) {
+
+    message("❌ No tienes suficiente dinero.");
+    return;
+  }
+
+  currentPrice++;
+
+  document.getElementById("price").textContent =
+    "€" + currentPrice + "M";
+
+  /*
+    La IA analiza el precio.
+    Los jugadores con mayor rating
+    hacen que la IA puje más.
+  */
+
+  const quality = currentPlayer.rating;
+
+  const chance =
+    quality >= 97 ? .70 :
+    quality >= 95 ? .50 :
+    .30;
+
+  if (
+    Math.random() < chance &&
+    aiMoney > currentPrice
+  ) {
+
+    currentPrice++;
+
+    document.getElementById("price").textContent =
+      "€" + currentPrice + "M";
+
+    message(
+      "🤖 La IA sube la oferta a €" +
+      currentPrice +
+      "M"
+    );
+
+  } else {
+
+    /*
+      El jugador gana automáticamente
+      si la IA abandona.
+    */
+
+    buyPlayer();
+  }
+}
+
+
+/* =========================
+   PASAR
+========================= */
+
+function pass() {
+
+  /*
+    La IA decide si compra.
+  */
+
+  if (
+    aiMoney >= currentPrice &&
+    Math.random() < .85
+  ) {
+
+    aiMoney -= currentPrice;
+
+    aiTeam.push(currentPlayer);
+
+    message(
+      "🤖 La IA compra a " +
+      currentPlayer.name +
+      " por €" +
+      currentPrice +
+      "M"
+    );
+
+  } else {
+
+    message(
+      "Nadie compra a " +
+      currentPlayer.name
+    );
+  }
+
+  nextAuction();
+}
+
+
+/* =========================
+   COMPRAR
+========================= */
+
+function buyPlayer() {
+
+  if (money < currentPrice) {
+    message("❌ No puedes pagar este jugador.");
+    return;
+  }
+
+  money -= currentPrice;
+
+  myTeam.push(currentPlayer);
+
+  document.getElementById("money").textContent =
+    "€" + money + "M";
+
+  document.getElementById("count").textContent =
+    myTeam.length + " / 11";
+
+  assignPlayer(currentPlayer);
+
+  message(
+    "✅ Fichaste a " +
+    currentPlayer.name +
+    " por €" +
+    currentPrice +
+    "M"
+  );
+
+  nextAuction();
+}
+
+
+/* =========================
+   SIGUIENTE
+========================= */
+
+function nextAuction() {
+
+  index++;
+
+  document.getElementById("aiMoney").textContent =
+    "€" + aiMoney + "M";
+
+  setTimeout(showPlayer, 900);
+}
+
+
+/* =========================
+   ASIGNAR AL CAMPO
+========================= */
+
+function assignPlayer(player) {
+
+  const positions = {
+
+    "POR": ["GK"],
+    "LD": ["RB"],
+    "LI": ["LB"],
+    "DFC": ["CB1", "CB2"],
+    "MC": ["CM1", "CM2"],
+    "MCO": ["CAM"],
+    "EI": ["LW"],
+    "ED": ["RW"],
+    "DC": ["ST"]
+
+  };
+
+  const possible =
+    positions[player.pos] || [];
+
+  for (const pos of possible) {
+
+    const element =
+      document.getElementById(pos);
+
+    const original =
+      element.dataset.original ||
+      element.textContent;
+
+    element.dataset.original = original;
+
+    if (
+      element.textContent === original
+    ) {
+
+      element.textContent =
+        player.name;
+
+      return;
+    }
+  }
+
+  /*
+    Si no existe hueco exacto,
+    intenta cualquier posición vacía.
+  */
+
+  for (const pos of
+    ["GK","RB","CB1","CB2","LB",
+     "CM1","CM2","CAM","LW","RW","ST"]) {
+
+    const element =
+      document.getElementById(pos);
+
+    const original =
+      element.dataset.original ||
+      element.textContent;
+
+    element.dataset.original = original;
+
+    if (element.textContent === original) {
+
+      element.textContent =
+        player.name;
+
+      return;
+    }
+  }
+}
+
+
+/* =========================
+   FIN DE SUBASTA
+========================= */
+
+function finishAuction() {
+
+  auctionActive = false;
+
+  document.getElementById("bid").disabled = true;
+  document.getElementById("pass").disabled = true;
+
+  document.getElementById("auction").style.display =
+    "none";
+
+  document.getElementById("match").style.display =
+    "block";
+
+  message("🏆 ¡Tu XI está listo!");
+
+}
+
+
+/* =========================
+   MENSAJES
+========================= */
+
+function message(text) {
+
+  document.getElementById("message").textContent =
+    text;
+}
+
+
+/* =========================
+   FUERZA DEL EQUIPO
+========================= */
+
+function teamStrength(team) {
+
+  if (team.length === 0)
+    return 50;
+
+  const total =
+    team.reduce(
+      (sum, player) =>
+        sum + player.rating,
+      0
+    );
+
+  return total / team.length;
+}
+
+
+/* =========================
+   PARTIDO
+========================= */
+
+function playMatch() {
+
+  if (myTeam.length < 11) {
+
+    alert(
+      "Necesitas 11 jugadores para jugar."
+    );
+
+    return;
+  }
+
+  document.getElementById("playButton").disabled =
+    true;
+
+  let myGoals = 0;
+  let aiGoals = 0;
+
+  const events =
+    document.getElementById("events");
+
+  events.innerHTML = "";
+
+  document.getElementById("final").textContent =
+    "";
+
+  /*
+    Calculamos fuerza de los equipos.
+  */
+
+  const myPower =
+    teamStrength(myTeam);
+
+  const aiPower =
+    teamStrength(aiTeam);
+
+  /*
+    Jugamos 90 minutos,
+    avanzando de 10 en 10.
+  */
+
+  let minute = 10;
+
+  const interval =
+    setInterval(() => {
+
+      /*
+        Probabilidad de gol.
+        El equipo más fuerte
+        tiene una pequeña ventaja.
+      */
+
+      const myChance =
+        .035 +
+        (myPower - aiPower) * .002;
+
+      const aiChance =
+        .035 +
+        (aiPower - myPower) * .002;
+
+      if (Math.random() < myChance) {
+
+        myGoals++;
+
+        const scorer =
+          randomPlayer(myTeam);
+
+        addEvent(
+          minute +
+          "' ⚽ ¡GOOOL de " +
+          scorer.name +
+          "! Tu equipo"
+        );
+
+        updateScore(myGoals, aiGoals);
+      }
+
+      if (Math.random() < aiChance) {
+
+        aiGoals++;
+
+        const scorer =
+          randomPlayer(aiTeam);
+
+        addEvent(
+          minute +
+          "' ⚽ ¡GOOOL de " +
+          scorer.name +
+          "! IA"
+        );
+
+        updateScore(myGoals, aiGoals);
+      }
+
+      /*
+        Otras acciones.
+      */
+
+      if (Math.random() < .25) {
+
+        addEvent(
+          minute +
+          "' 🟨 Gran disputa en el centro del campo."
+        );
+      }
+
+      minute += 10;
+
+      if (minute > 90) {
+
+        clearInterval(interval);
+
+        finishMatch(
+          myGoals,
+          aiGoals
+        );
+      }
+
+    }, 600);
+}
+
+
+/* =========================
+   JUGADOR ALEATORIO
+========================= */
+
+function randomPlayer(team) {
+
+  return team[
+    Math.floor(
+      Math.random() * team.length
+    )
+  ];
+}
+
+
+/* =========================
+   EVENTO
+========================= */
+
+function addEvent(text) {
+
+  const div =
+    document.createElement("div");
+
+  div.className = "event";
+
+  div.textContent = text;
+
+  document.getElementById("events")
+    .appendChild(div);
+
+  document.getElementById("events")
+    .scrollTop =
+    document.getElementById("events")
+    .scrollHeight;
+}
+
+
+/* =========================
+   MARCADOR
+========================= */
+
+function updateScore(my, ai) {
+
+  document.getElementById("myScore")
+    .textContent = my;
+
+  document.getElementById("aiScore")
+    .textContent = ai;
+}
+
+
+/* =========================
+   RESULTADO
+========================= */
+
+function finishMatch(my, ai) {
+
+  let result;
+
+  if (my > ai) {
+
+    result =
+      "🏆 ¡GANASTE EL PARTIDO!";
+
+  } else if (my < ai) {
+
+    result =
+      "🤖 LA IA HA GANADO";
+
+  } else {
+
+    result =
+      "🤝 ¡EMPATE!";
+  }
+
+  document.getElementById("final")
+    .textContent = result;
+}
+
+</script>
+
+</body>
+</html>
